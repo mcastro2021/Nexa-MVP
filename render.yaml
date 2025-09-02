@@ -17,17 +17,20 @@ services:
         value: production
       - key: FLASK_DEBUG
         value: false
+      - key: CORS_ORIGIN
+        value: https://nexa-mvp-frontend.onrender.com
 
   # Frontend
-  - type: web
+  - type: static
     name: nexa-mvp-frontend
-    env: static
     plan: starter
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: frontend/build
     envVars:
       - key: REACT_APP_API_URL
         value: https://nexa-mvp-backend.onrender.com
+      - key: NODE_VERSION
+        value: "18"
 
 databases:
   - name: nexa-mvp-db
