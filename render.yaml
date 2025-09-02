@@ -1,39 +1,46 @@
 services:
-  # Backend API
   - type: web
     name: nexa-mvp-backend
     env: python
     plan: starter
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn main:app
+    buildCommand: |
+      pip install --upgrade pip setuptools wheel
+      pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     envVars:
       - key: PYTHON_VERSION
-        value: 3.9.16
+        value: 3.11.18
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_APP
+        value: app.py
+      - key: DATABASE_URL
+        fromDatabase:
+          name: nexa-mvp-db
+          property: connectionString
       - key: SECRET_KEY
         generateValue: true
       - key: JWT_SECRET_KEY
         generateValue: true
-      - key: FLASK_ENV
-        value: production
-      - key: FLASK_DEBUG
-        value: false
       - key: CORS_ORIGIN
         value: https://nexa-mvp-frontend.onrender.com
 
-  # Frontend
   - type: static
     name: nexa-mvp-frontend
     plan: starter
-    buildCommand: cd frontend && npm install && npm run build
+    buildCommand: |
+      cd frontend
+      npm install
+      npm run build
     staticPublishPath: frontend/build
     envVars:
-      - key: REACT_APP_API_URL
-        value: https://nexa-mvp-backend.onrender.com
       - key: NODE_VERSION
         value: "18"
+      - key: REACT_APP_API_URL
+        value: https://nexa-mvp-backend.onrender.com
 
 databases:
   - name: nexa-mvp-db
     databaseName: nexa_mvp
+    user: nexa_mvp_user
     plan: starter
-    ipAllowList: []
