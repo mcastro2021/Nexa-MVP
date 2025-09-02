@@ -208,6 +208,37 @@ class Calendar(db.Model):
     end_datetime = db.Column(db.DateTime, nullable=False)
     event_type = db.Column(db.String(50))  # meeting, reminder, event
 
+# Rutas básicas
+@app.route('/')
+def home():
+    return jsonify({
+        'message': 'Nexa-MVP Backend is running!',
+        'status': 'healthy',
+        'timestamp': datetime.utcnow().isoformat(),
+        'version': '1.0.0',
+        'endpoints': [
+            '/api/auth/register',
+            '/api/auth/login',
+            '/api/profile',
+            '/api/client/projects',
+            '/api/admin/stock',
+            '/api/admin/employees',
+            '/api/logistics/route',
+            '/api/executive/metrics',
+            '/api/chatbot',
+            '/api/calendar',
+            '/api/init-db'
+        ]
+    })
+
+@app.route('/health')
+def health():
+    return jsonify({
+        'status': 'healthy',
+        'database': 'configured',
+        'timestamp': datetime.utcnow().isoformat()
+    })
+
 # Rutas de autenticación
 @app.route('/api/auth/register', methods=['POST'])
 def register():
@@ -510,6 +541,11 @@ def create_calendar_event():
 def init_db():
     db.create_all()
     return jsonify({'message': 'Database initialized successfully'})
+
+# Inicializar base de datos al arrancar
+@app.before_first_request
+def create_tables():
+    db.create_all()
 
 if __name__ == '__main__':
     with app.app_context():
