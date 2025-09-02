@@ -1,0 +1,36 @@
+services:
+  # Backend API
+  - type: web
+    name: nexa-mvp-backend
+    env: python
+    plan: starter
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && gunicorn wsgi:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.16
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: false
+
+  # Frontend
+  - type: web
+    name: nexa-mvp-frontend
+    env: static
+    plan: starter
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://nexa-mvp-backend.onrender.com
+
+databases:
+  - name: nexa-mvp-db
+    databaseName: nexa_mvp
+    plan: starter
+    ipAllowList: []
