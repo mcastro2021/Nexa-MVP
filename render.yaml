@@ -23,7 +23,7 @@ services:
       - key: JWT_SECRET_KEY
         generateValue: true
       - key: CORS_ORIGIN
-        value: https://nexa-mvp-frontend.onrender.com
+        value: "*"
 
   - type: static
     name: nexa-mvp-frontend
@@ -37,7 +37,10 @@ services:
       - key: NODE_VERSION
         value: "18"
       - key: REACT_APP_API_URL
-        value: https://nexa-mvp-backend.onrender.com
+        fromService:
+          name: nexa-mvp-backend
+          type: web
+          property: url
 
 databases:
   - name: nexa-mvp-db

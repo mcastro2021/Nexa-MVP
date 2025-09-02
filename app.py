@@ -13,7 +13,7 @@ from datetime import datetime
 app = Flask(__name__)
 
 # Configure CORS
-CORS(app, origins=[os.getenv('CORS_ORIGIN', 'https://nexa-mvp-frontend.onrender.com')])
+CORS(app, origins=os.getenv('CORS_ORIGIN', '*').split(','))
 
 # Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///nexa_mvp.db')
@@ -46,7 +46,7 @@ def api_status():
     return jsonify({
         'api': 'running',
         'database': 'connected' if db.engine.pool.checkedin() > 0 else 'disconnected',
-        'cors_origin': os.getenv('CORS_ORIGIN', 'not_set'),
+        'cors_origin': os.getenv('CORS_ORIGIN', 'all_origins'),
         'timestamp': datetime.utcnow().isoformat()
     })
 
