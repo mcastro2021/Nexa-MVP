@@ -25,14 +25,15 @@ services:
       - key: CORS_ORIGIN
         value: "*"
 
-  - type: static
+  - type: web
     name: nexa-mvp-frontend
+    env: node
     plan: starter
     buildCommand: |
       cd frontend
       npm install
       npm run build
-    staticPublishPath: frontend/build
+    startCommand: cd frontend && npm start
     envVars:
       - key: NODE_VERSION
         value: "18"
