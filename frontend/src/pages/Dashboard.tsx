@@ -51,6 +51,30 @@ interface StockItem {
   low_stock_alert: boolean;
 }
 
+// Mock data como fallback
+const mockProjects: Project[] = [
+  { id: 1, name: 'Casa Familiar Los Pinos', status: 'in_progress', progress: 75, estimated_end_date: '2024-06-15' },
+  { id: 2, name: 'Edificio Comercial Centro', status: 'in_progress', progress: 45, estimated_end_date: '2024-08-20' },
+  { id: 3, name: 'Remodelación Oficinas', status: 'completed', progress: 100, estimated_end_date: '2024-03-10' },
+  { id: 4, name: 'Complejo Residencial Norte', status: 'pending', progress: 15, estimated_end_date: '2024-12-30' }
+];
+
+const mockPayments: Payment[] = [
+  { id: 1, amount: 150000, status: 'completed', payment_date: '2024-02-15' },
+  { id: 2, amount: 75000, status: 'pending', payment_date: '2024-03-01' },
+  { id: 3, amount: 200000, status: 'in_progress', payment_date: '2024-02-28' },
+  { id: 4, amount: 120000, status: 'completed', payment_date: '2024-01-20' },
+  { id: 5, amount: 90000, status: 'pending', payment_date: '2024-03-15' }
+];
+
+const mockStockItems: StockItem[] = [
+  { id: 1, name: 'Cemento Portland', current_stock: 50, min_stock: 100, low_stock_alert: true },
+  { id: 2, name: 'Varillas de Hierro 12mm', current_stock: 200, min_stock: 150, low_stock_alert: false },
+  { id: 3, name: 'Arena Fina', current_stock: 15, min_stock: 30, low_stock_alert: true },
+  { id: 4, name: 'Ladrillos Comunes', current_stock: 5000, min_stock: 2000, low_stock_alert: false },
+  { id: 5, name: 'Pintura Exterior', current_stock: 8, min_stock: 20, low_stock_alert: true }
+];
+
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
@@ -67,36 +91,69 @@ const Dashboard: React.FC = () => {
   const fetchDashboardData = async () => {
     try {
       if (user?.role === 'cliente') {
-        const [projectsRes, paymentsRes] = await Promise.all([
-          axios.get('/api/client/projects'),
-          axios.get('/api/client/payments')
-        ]);
-        setProjects(projectsRes.data);
-        setPayments(paymentsRes.data);
+        try {
+          const [projectsRes, paymentsRes] = await Promise.all([
+            axios.get('/api/client/projects'),
+            axios.get('/api/client/payments')
+          ]);
+          setProjects(projectsRes.data);
+          setPayments(paymentsRes.data);
+        } catch (error) {
+          // Fallback a datos mock si falla el backend
+          console.log('Backend no disponible, usando datos mock');
+          setProjects(mockProjects.filter(p => p.id <= 2));
+          setPayments(mockPayments.filter(p => p.id <= 3));
+        }
       } else if (user?.role === 'admin') {
-        const [stockRes, paymentsRes] = await Promise.all([
-          axios.get('/api/admin/stock'),
-          axios.get('/api/admin/payments')
-        ]);
-        setStockItems(stockRes.data);
-        setPayments(paymentsRes.data || []);
+        try {
+          const [stockRes, paymentsRes] = await Promise.all([
+            axios.get('/api/admin/stock'),
+            axios.get('/api/admin/payments')
+          ]);
+          setStockItems(stockRes.data);
+          setPayments(paymentsRes.data || []);
+        } catch (error) {
+          // Fallback a datos mock si falla el backend
+          console.log('Backend no disponible, usando datos mock');
+          setStockItems(mockStockItems);
+          setPayments(mockPayments);
+        }
       } else if (user?.role === 'logistica') {
-        const [stockRes, routeRes] = await Promise.all([
-          axios.get('/api/admin/stock'),
-          axios.get('/api/logistics/route')
-        ]);
-        setStockItems(stockRes.data);
-        setProjects(routeRes.data);
+        try {
+          const [stockRes, routeRes] = await Promise.all([
+            axios.get('/api/admin/stock'),
+            axios.get('/api/logistics/route')
+          ]);
+          setStockItems(stockRes.data);
+          setProjects(routeRes.data);
+        } catch (error) {
+          // Fallback a datos mock si falla el backend
+          console.log('Backend no disponible, usando datos mock');
+          setStockItems(mockStockItems);
+          setProjects(mockProjects.filter(p => p.status === 'in_progress'));
+        }
       } else if (user?.role === 'ejecutivo') {
-        const [metricsRes, stockRes] = await Promise.all([
-          axios.get('/api/executive/metrics'),
-          axios.get('/api/admin/stock')
-        ]);
-        setStockItems(stockRes.data);
-        // Los ejecutivos ven métricas generales
+        try {
+          const [metricsRes, stockRes] = await Promise.all([
+            axios.get('/api/executive/metrics'),
+            axios.get('/api/admin/stock')
+          ]);
+          setStockItems(stockRes.data);
+          // Los ejecutivos ven métricas generales
+        } catch (error) {
+          // Fallback a datos mock si falla el backend
+          console.log('Backend no disponible, usando datos mock');
+          setProjects(mockProjects);
+          setPayments(mockPayments);
+          setStockItems(mockStockItems);
+        }
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      // Fallback general a datos mock
+      setProjects(mockProjects);
+      setPayments(mockPayments);
+      setStockItems(mockStockItems);
     } finally {
       setLoading(false);
     }

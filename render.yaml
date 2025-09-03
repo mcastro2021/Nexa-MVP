@@ -29,13 +29,12 @@ services:
 
   - type: web
     name: nexa-mvp-frontend
-    env: node
-    plan: starter
+    env: static
     buildCommand: |
       cd frontend
       npm install
       npm run build
-    startCommand: cd frontend && npm start
+    staticPublishPath: frontend/build
     envVars:
       - key: NODE_VERSION
         value: "18"
@@ -44,6 +43,10 @@ services:
           name: nexa-mvp-backend
           type: web
           property: url
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
 
 databases:
   - name: nexa-mvp-db

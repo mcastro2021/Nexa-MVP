@@ -30,6 +30,12 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+// Configurar la URL base de la API
+const API_BASE_URL = process.env.REACT_APP_API_URL || window.location.origin;
+
+// Configurar axios con la URL base
+axios.defaults.baseURL = API_BASE_URL;
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);

@@ -1,250 +1,279 @@
-# Nexa MVP - Sistema de Gestión Constructora
+# Nexa MVP - Sistema de Gestión para Constructora
 
-Sistema integral de gestión para constructora de viviendas wood frame y steel frame, diseñado para administrar de manera transparente y eficiente todos los aspectos del negocio.
+## Descripción
+Nexa MVP es un sistema de gestión integral para constructoras que permite a clientes, administradores, personal de logística y ejecutivos gestionar proyectos, pagos, stock y métricas de manera eficiente.
 
-## 🏗️ Características Principales
+## Características Principales
 
-### 👥 Perfiles de Usuario
+### 🏗️ Gestión de Proyectos
+- Seguimiento del progreso de obras
+- Estados de proyectos (Pendiente, En Progreso, Completado)
+- Visualización de avances con barras de progreso
 
-#### **Cliente Final**
-- Acceso a su legajo personal
-- Visualización de proyectos y avances
-- Historial de pagos y facturación
-- Sistema de consultas y soporte
-- Carrousel de información para fidelización
+### 💰 Control de Pagos
+- Gestión de pagos por proyecto
+- Estados de pago (Pendiente, En Progreso, Completado)
+- Historial de transacciones
 
-#### **Colaborador Interno - Administración**
-- **Control de Stock**: Gestión de inventario, alertas de stock bajo, reportes de costos
-- **Proveedores**: Contratos, adendas, pedidos, fechas de pago y facturación
-- **Capital Humano**: Legajos individuales, datos biométricos, seguros, ausencias y licencias
-- **Legajo Cliente**: Información completa del cliente, contratos, pagos y etapas del proyecto
+### 📦 Control de Stock
+- Inventario de materiales de construcción
+- Alertas de stock bajo
+- Gestión de niveles mínimos
 
-#### **Colaborador Interno - Logística**
-- **Control de Stock**: Gestión de materiales por proyecto, alertas de stock bajo
-- **Capital Humano**: Acceso a legajos, recibos de sueldo, gestión de licencias
-- **Hoja de Ruta**: Planificación temporal de proyectos, visibilidad de cronogramas
+### 👥 Gestión de Usuarios
+- Sistema de roles (Cliente, Admin, Logística, Ejecutivo)
+- Dashboards personalizados por rol
+- Autenticación segura con JWT
 
-#### **Ejecutivo**
-- **Métricas del Negocio**: KPIs, tiempo de ejecución, ingresos/egresos
-- **Alertas**: Demoras de entrega, satisfacción de clientes
-- **Proyecciones**: Económicas y de recursos
-- **Reportes**: Personal, estados, ausencias y licencias
+### 🤖 Asistente Virtual
+- Chatbot integrado con respuestas inteligentes
+- Integración con WhatsApp
+- Preguntas frecuentes automatizadas
 
-### 🤖 Chatbot Integrado
-- Resolución automática de consultas frecuentes
-- Derivación a WhatsApp para consultas complejas
-- Preguntas sugeridas para facilitar la interacción
-
-### 📅 Calendario Integrado
-- Gestión de eventos, reuniones y recordatorios
-- Disponible para todos los perfiles de usuario
-- Notificaciones y alertas
-
-### 📱 Diseño Responsive
-- Optimizado para dispositivos móviles y desktop
-- Interfaz adaptativa según el rol del usuario
-- Navegación intuitiva y accesible
-
-## 🚀 Tecnologías Utilizadas
+## Tecnologías Utilizadas
 
 ### Backend
-- **Flask**: Framework web Python
-- **SQLAlchemy**: ORM para base de datos
-- **JWT**: Autenticación y autorización
-- **PostgreSQL**: Base de datos principal
-- **Gunicorn**: Servidor WSGI para producción
+- **Flask** con Python 3.11
+- **SQLAlchemy** para ORM
+- **Flask-JWT-Extended** para autenticación
+- **PostgreSQL** en producción / SQLite en desarrollo
+- **Flask-CORS** para comunicación con frontend
 
 ### Frontend
-- **React 18**: Biblioteca de interfaz de usuario
-- **TypeScript**: Tipado estático
-- **Material-UI**: Componentes de interfaz
-- **React Router**: Navegación entre páginas
-- **Axios**: Cliente HTTP para API
+- **React 18** con TypeScript
+- **Material-UI (MUI)** para componentes de interfaz
+- **React Router** para navegación
+- **React Query** para gestión de estado
+- **Recharts** para gráficos y métricas
+- **Axios** para peticiones HTTP
 
-## 📋 Requisitos del Sistema
+### Características Técnicas
+- Diseño responsive para móviles y desktop
+- Fallback a datos mock si el backend no está disponible
+- Optimizado para despliegue en Render
 
-### Backend
-- Python 3.9+
-- PostgreSQL 12+
-- Dependencias listadas en `backend/requirements.txt`
+## Instalación y Configuración
 
-### Frontend
-- Node.js 16+
+### Prerrequisitos
+- Python 3.11 o superior
+- Node.js 18 o superior
 - npm o yarn
-- Dependencias listadas en `frontend/package.json`
 
-## 🛠️ Instalación y Configuración
+### Instalación Local
 
-### 1. Clonar el Repositorio
-```bash
-git clone <repository-url>
-cd Nexa-MVP
-```
-
-### 2. Configurar Backend
+#### Backend
+1. Navega al directorio del backend:
 ```bash
 cd backend
+```
+
+2. Crea un entorno virtual:
+```bash
 python -m venv venv
 source venv/bin/activate  # En Windows: venv\Scripts\activate
+```
+
+3. Instala las dependencias:
+```bash
 pip install -r requirements.txt
 ```
 
-### 3. Configurar Variables de Entorno
-```bash
-cp env_example .env
-# Editar .env con tus configuraciones
+4. Configura las variables de entorno (crea un archivo `.env`):
+```env
+SECRET_KEY=tu-clave-secreta-aqui
+JWT_SECRET_KEY=tu-jwt-secret-aqui
+DATABASE_URL=sqlite:///nexa_mvp.db
+FLASK_ENV=development
 ```
 
-### 4. Configurar Base de Datos
+5. Inicializa la base de datos:
 ```bash
-# Crear base de datos PostgreSQL
-# Ejecutar migraciones si es necesario
+python app.py
 ```
 
-### 5. Configurar Frontend
+#### Frontend
+1. Navega al directorio del frontend:
 ```bash
 cd frontend
+```
+
+2. Instala las dependencias:
+```bash
 npm install
 ```
 
-### 6. Ejecutar Aplicación
-
-#### Desarrollo
+3. Inicia el servidor de desarrollo:
 ```bash
-# Terminal 1 - Backend
-cd backend
-python app.py
-
-# Terminal 2 - Frontend
-cd frontend
 npm start
 ```
 
-#### Producción
-```bash
-# Backend
-cd backend
-gunicorn wsgi:app
+4. Abre tu navegador en `http://localhost:3000`
 
-# Frontend
-cd frontend
-npm run build
+### Despliegue en Render
+
+El proyecto está configurado para desplegarse automáticamente en Render:
+
+1. **Backend**: Se despliega como servicio web Python
+2. **Frontend**: Se despliega como sitio estático
+3. **Base de datos**: PostgreSQL automática
+
+La configuración en `render.yaml` incluye:
+- Variables de entorno automáticas
+- Conexión entre frontend y backend
+- Base de datos PostgreSQL
+
+## Usuarios de Prueba
+
+El sistema incluye usuarios de demostración:
+
+| Usuario | Contraseña | Rol | Acceso |
+|---------|------------|-----|--------|
+| `cliente` | `cliente123` | Cliente | Proyectos propios, pagos |
+| `admin` | `admin123` | Administrador | Stock, pagos, empleados |
+| `logistica` | `logistica123` | Logística | Stock, rutas de trabajo |
+| `ejecutivo` | `ejecutivo123` | Ejecutivo | Métricas generales, reportes |
+
+## Estructura del Proyecto
+
+```
+Nexa-MVP/
+├── backend/
+│   ├── app.py              # Aplicación principal Flask
+│   ├── config.py           # Configuración
+│   ├── requirements.txt    # Dependencias Python
+│   ├── wsgi.py            # WSGI para producción
+│   └── gunicorn.conf.py   # Configuración Gunicorn
+├── frontend/
+│   ├── public/
+│   │   ├── index.html
+│   │   ├── config.js       # Configuración del frontend
+│   │   └── manifest.json
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Chatbot.tsx    # Asistente virtual
+│   │   │   └── Layout.tsx     # Layout principal
+│   │   ├── contexts/
+│   │   │   └── AuthContext.tsx # Contexto de autenticación
+│   │   ├── pages/
+│   │   │   ├── Dashboard.tsx   # Dashboard principal
+│   │   │   ├── Login.tsx      # Página de login
+│   │   │   ├── Projects.tsx   # Gestión de proyectos
+│   │   │   ├── Payments.tsx   # Gestión de pagos
+│   │   │   ├── Stock.tsx      # Control de inventario
+│   │   │   ├── Employees.tsx  # Gestión de empleados
+│   │   │   ├── WorkRoute.tsx  # Rutas de trabajo
+│   │   │   ├── ExecutiveMetrics.tsx # Métricas ejecutivas
+│   │   │   └── Calendar.tsx   # Calendario
+│   │   ├── App.tsx           # Componente principal
+│   │   └── index.tsx         # Punto de entrada
+│   ├── package.json
+│   └── tsconfig.json
+├── render.yaml              # Configuración de Render
+└── README.md
 ```
 
-## 🌐 Despliegue en Render.com
+## API Endpoints
 
-El proyecto incluye configuración automática para Render.com:
+### Autenticación
+- `POST /api/auth/login` - Iniciar sesión
+- `POST /api/auth/register` - Registrar usuario
+- `GET /api/profile` - Obtener perfil del usuario
 
-1. **Conectar Repositorio**: Vincular el repositorio Git con Render
-2. **Despliegue Automático**: Render detectará el `render.yaml` y configurará los servicios
-3. **Base de Datos**: Se creará automáticamente una instancia PostgreSQL
-4. **Variables de Entorno**: Se configurarán automáticamente las claves secretas
+### Clientes
+- `GET /api/client/projects` - Proyectos del cliente
+- `GET /api/client/payments` - Pagos del cliente
 
-### Servicios en Render
-- **Backend**: API Flask con Gunicorn
-- **Frontend**: Aplicación React estática
-- **Base de Datos**: PostgreSQL con respaldos automáticos
+### Administración
+- `GET /api/admin/stock` - Control de inventario
+- `GET /api/admin/employees` - Gestión de empleados
 
-## 👤 Usuarios de Prueba
+### Logística
+- `GET /api/logistics/route` - Rutas de trabajo
 
-Para facilitar las pruebas, se incluyen usuarios predefinidos:
+### Ejecutivos
+- `GET /api/executive/metrics` - Métricas del negocio
 
-| Usuario | Contraseña | Rol |
-|---------|------------|-----|
-| `cliente` | `cliente123` | Cliente Final |
-| `admin` | `admin123` | Administración |
-| `logistica` | `logistica123` | Logística |
-| `ejecutivo` | `ejecutivo123` | Ejecutivo |
+### Chatbot
+- `POST /api/chatbot` - Interacción con asistente virtual
 
-## 📊 Estructura de la Base de Datos
+### Calendario
+- `GET /api/calendar` - Obtener eventos
+- `POST /api/calendar` - Crear evento
+
+## Funcionalidades por Rol
+
+### Cliente
+- Ver progreso de sus proyectos
+- Consultar estado de pagos
+- Acceder al asistente virtual
+- Calendario de eventos
+
+### Administrador
+- Control completo de stock
+- Gestión de todos los pagos
+- Administración de empleados
+- Alertas de inventario
+
+### Logística
+- Gestión de rutas de trabajo
+- Control de stock crítico
+- Seguimiento de proyectos en curso
+
+### Ejecutivo
+- Métricas generales del negocio
+- Reportes de rendimiento
+- Vista consolidada de todos los datos
+
+## Modo Fallback
+
+El frontend incluye un sistema de fallback que:
+
+- **Conecta al backend** cuando está disponible
+- **Usa datos mock** si el backend no responde
+- **Mantiene funcionalidad** en ambos casos
+- **Notifica en consola** el estado de la conexión
+
+## Base de Datos
 
 ### Modelos Principales
-- **User**: Usuarios del sistema con roles
+- **User**: Usuarios del sistema
 - **ClientProfile**: Perfiles de clientes
 - **EmployeeProfile**: Perfiles de empleados
 - **Project**: Proyectos de construcción
-- **ProjectStage**: Etapas de los proyectos
-- **Material**: Materiales e inventario
-- **Supplier**: Proveedores y contratos
+- **Material**: Inventario de materiales
 - **Payment**: Pagos y transacciones
 - **Calendar**: Eventos y recordatorios
 
-## 🔒 Seguridad
+### Relaciones
+- Un cliente puede tener múltiples proyectos
+- Un proyecto puede tener múltiples etapas y materiales
+- Los empleados pueden estar asignados a múltiples proyectos
+- Los pagos están vinculados a proyectos específicos
 
-- **JWT**: Tokens de autenticación seguros
-- **Roles**: Sistema de permisos basado en roles
-- **Validación**: Validación de entrada en frontend y backend
-- **HTTPS**: Comunicación encriptada en producción
+## Configuración de Producción
 
-## 📱 Funcionalidades por Rol
+### Variables de Entorno
+```env
+SECRET_KEY=clave-secreta-produccion
+JWT_SECRET_KEY=jwt-secret-produccion
+DATABASE_URL=postgresql://usuario:password@host:puerto/database
+FLASK_ENV=production
+CORS_ORIGIN=https://tu-frontend-url.com
+```
 
-### Cliente
-- Dashboard personalizado
-- Visualización de proyectos
-- Historial de pagos
-- Sistema de consultas
-- Calendario personal
+### Render Configuration
+El archivo `render.yaml` configura automáticamente:
+- Servicios web para backend y frontend
+- Base de datos PostgreSQL
+- Variables de entorno seguras
+- Conexión entre servicios
 
-### Administración
-- Gestión completa de stock
-- Administración de empleados
-- Control de pagos
-- Gestión de proveedores
-- Reportes administrativos
+## Contacto y Soporte
 
-### Logística
-- Control de stock por proyecto
-- Hoja de ruta de proyectos
-- Gestión de materiales
-- Planificación temporal
+Para consultas sobre el proyecto:
+- WhatsApp: +54 9 11 1234-5678
+- Email: info@nexamvp.com
 
-### Ejecutivo
-- Métricas del negocio
-- KPIs de rendimiento
-- Reportes ejecutivos
-- Proyecciones financieras
-- Gestión de alertas
+## Licencia
 
-## 🚧 Estado del Proyecto
-
-- ✅ **Backend**: API completa con todos los endpoints
-- ✅ **Frontend**: Interfaz de usuario responsive
-- ✅ **Base de Datos**: Modelos y relaciones definidos
-- ✅ **Autenticación**: Sistema JWT implementado
-- ✅ **Chatbot**: Integración básica con WhatsApp
-- ✅ **Calendario**: Gestión de eventos
-- ✅ **Render.com**: Configuración de despliegue
-
-## 🔮 Próximas Funcionalidades
-
-- [ ] Integración con sistemas de biometría
-- [ ] Módulo de facturación avanzado
-- [ ] Sistema de notificaciones push
-- [ ] Reportes en tiempo real
-- [ ] Integración con sistemas externos
-- [ ] Módulo de planificación financiera
-
-## 📞 Soporte
-
-Para consultas técnicas o soporte:
-- **Email**: soporte@nexamvp.com
-- **WhatsApp**: +54 9 11 1234-5678
-- **Documentación**: [docs.nexamvp.com](https://docs.nexamvp.com)
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
-
-## 🤝 Contribución
-
-Las contribuciones son bienvenidas. Por favor:
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
----
-
-**Nexa MVP** - Transformando la gestión constructora con tecnología moderna y eficiente.
+Este proyecto es un MVP (Producto Mínimo Viable) desarrollado para demostración de capacidades de gestión en el sector de la construcción.

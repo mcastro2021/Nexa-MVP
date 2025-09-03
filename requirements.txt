@@ -1,0 +1,3 @@
+# Este archivo es para compatibilidad con Render
+# Los requirements reales están en backend/requirements.txt
+-r backend/requirements.txt

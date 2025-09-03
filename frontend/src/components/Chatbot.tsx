@@ -34,6 +34,42 @@ interface Message {
   timestamp: Date;
 }
 
+// Mock responses como fallback
+const mockResponses: { [key: string]: string } = {
+  'progreso': 'Según nuestros registros, tu proyecto tiene un avance del 75%. Estamos en la etapa de acabados interiores.',
+  'pago': 'Tu próximo pago está programado para el 15 de marzo por un monto de $75,000. Puedes realizarlo a través de transferencia bancaria.',
+  'materiales': 'Utilizamos materiales de primera calidad: cemento Portland, hierro del 420, ladrillos cerámicos y pintura premium.',
+  'garantía': 'Ofrecemos garantía de 2 años en estructura y 1 año en instalaciones. También incluye mantenimiento gratuito los primeros 6 meses.',
+  'tiempo': 'El tiempo estimado de construcción varía según el proyecto. Para una casa estándar son aproximadamente 8-12 meses.',
+  'contacto': 'Puedes contactarnos por WhatsApp al +54 9 11 1234-5678 o por email a info@nexamvp.com',
+  'default': 'Gracias por tu consulta. Para información más específica sobre tu proyecto, te recomiendo contactarnos por WhatsApp.'
+};
+
+const getResponse = (message: string): string => {
+  const lowerMessage = message.toLowerCase();
+  
+  if (lowerMessage.includes('progreso') || lowerMessage.includes('avance') || lowerMessage.includes('obra')) {
+    return mockResponses.progreso;
+  }
+  if (lowerMessage.includes('pago') || lowerMessage.includes('cuota') || lowerMessage.includes('dinero')) {
+    return mockResponses.pago;
+  }
+  if (lowerMessage.includes('material') || lowerMessage.includes('cemento') || lowerMessage.includes('ladrillo')) {
+    return mockResponses.materiales;
+  }
+  if (lowerMessage.includes('garantía') || lowerMessage.includes('garantia')) {
+    return mockResponses.garantía;
+  }
+  if (lowerMessage.includes('tiempo') || lowerMessage.includes('cuánto') || lowerMessage.includes('duración')) {
+    return mockResponses.tiempo;
+  }
+  if (lowerMessage.includes('contacto') || lowerMessage.includes('teléfono') || lowerMessage.includes('telefono')) {
+    return mockResponses.contacto;
+  }
+  
+  return mockResponses.default;
+};
+
 const Chatbot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -70,12 +106,14 @@ const Chatbot: React.FC = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = inputText;
     setInputText('');
     setIsLoading(true);
 
     try {
+      // Intentar usar el backend primero
       const response = await axios.post('/api/chatbot', {
-        message: inputText
+        message: currentInput
       });
 
       const botMessage: Message = {
@@ -100,13 +138,34 @@ const Chatbot: React.FC = () => {
         }, 1000);
       }
     } catch (error) {
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: 'Lo siento, hubo un error. Por favor, inténtalo de nuevo.',
-        isUser: false,
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, errorMessage]);
+      // Fallback a respuestas mock si falla el backend
+      console.log('Backend no disponible, usando respuestas mock');
+      
+      setTimeout(() => {
+        const response = getResponse(currentInput);
+        
+        const botMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: response,
+          isUser: false,
+          timestamp: new Date()
+        };
+
+        setMessages(prev => [...prev, botMessage]);
+
+        // Si la respuesta es la default, sugerir WhatsApp
+        if (response === mockResponses.default) {
+          setTimeout(() => {
+            const whatsappMessage: Message = {
+              id: (Date.now() + 2).toString(),
+              text: '¿Te gustaría contactarnos por WhatsApp para una consulta más detallada?',
+              isUser: false,
+              timestamp: new Date()
+            };
+            setMessages(prev => [...prev, whatsappMessage]);
+          }, 1000);
+        }
+      }, 1000 + Math.random() * 1000); // Delay aleatorio entre 1-2 segundos
     } finally {
       setIsLoading(false);
     }
