@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configurar Flask con el directorio estático correcto
-app = Flask(__name__)
+app = Flask(__name__, static_folder='frontend/build', static_url_path='')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-here')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///nexa_mvp.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -218,28 +218,21 @@ class Calendar(db.Model):
 # Rutas básicas
 @app.route('/')
 def index():
-    return jsonify({
-        'message': 'Nexa MVP API is running',
-        'status': 'healthy',
-        'version': '1.0.0',
-        'endpoints': {
-            'health': '/health',
-            'auth': '/api/auth/*',
-            'client': '/api/client/*',
-            'admin': '/api/admin/*',
-            'logistics': '/api/logistics/*',
-            'executive': '/api/executive/*',
-            'chatbot': '/api/chatbot',
-            'calendar': '/api/calendar/*'
-        }
-    })
+    try:
+        return app.send_static_file('index.html')
+    except FileNotFoundError:
+        return jsonify({
+            'error': 'Frontend not built',
+            'message': 'Please build the frontend first with: cd frontend && npm run build',
+            'status': 404
+        }), 404
 
 @app.route('/health')
 def health():
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.utcnow().isoformat(),
-        'service': 'nexa-mvp-backend'
+        'service': 'nexa-mvp'
     })
 
 # Rutas de autenticación
@@ -545,29 +538,57 @@ def init_db():
     db.create_all()
     return jsonify({'message': 'Database initialized successfully'})
 
+# Servir archivos estáticos del frontend
+@app.route('/<path:filename>')
+def serve_static(filename):
+    try:
+        return app.send_static_file(filename)
+    except FileNotFoundError:
+        # Si no se encuentra el archivo, redirigir al index.html para SPA routing
+        try:
+            return app.send_static_file('index.html')
+        except FileNotFoundError:
+            return jsonify({
+                'error': 'Frontend not built',
+                'message': 'Please build the frontend first',
+                'status': 404
+            }), 404
+
 # Manejo de errores
 @app.errorhandler(404)
 def not_found(error):
-    return jsonify({
-        'error': 'Not Found',
-        'message': 'The requested endpoint was not found on the server.',
-        'status': 404,
-        'available_endpoints': [
-            '/',
-            '/health',
-            '/api/auth/login',
-            '/api/auth/register',
-            '/api/profile',
-            '/api/client/projects',
-            '/api/client/payments',
-            '/api/admin/stock',
-            '/api/admin/employees',
-            '/api/logistics/route',
-            '/api/executive/metrics',
-            '/api/chatbot',
-            '/api/calendar'
-        ]
-    }), 404
+    # Para rutas de API, devolver error JSON
+    if request.path.startswith('/api/'):
+        return jsonify({
+            'error': 'Not Found',
+            'message': 'The requested endpoint was not found on the server.',
+            'status': 404,
+            'available_endpoints': [
+                '/',
+                '/health',
+                '/api/auth/login',
+                '/api/auth/register',
+                '/api/profile',
+                '/api/client/projects',
+                '/api/client/payments',
+                '/api/admin/stock',
+                '/api/admin/employees',
+                '/api/logistics/route',
+                '/api/executive/metrics',
+                '/api/chatbot',
+                '/api/calendar'
+            ]
+        }), 404
+    
+    # Para rutas del frontend, servir index.html (SPA routing)
+    try:
+        return app.send_static_file('index.html')
+    except FileNotFoundError:
+        return jsonify({
+            'error': 'Frontend not built',
+            'message': 'Please build the frontend first',
+            'status': 404
+        }), 404
 
 @app.errorhandler(500)
 def internal_error(error):

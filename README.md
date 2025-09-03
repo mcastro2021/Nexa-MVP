@@ -1,15 +1,15 @@
-# Nexa MVP - Sistema de Gestión con Servicios Separados
+# Nexa MVP - Sistema Unificado de Gestión
 
 ## Descripción
-Sistema completo de gestión para empresas constructoras que incluye gestión de proyectos, clientes, empleados, inventario y métricas ejecutivas. El proyecto está estructurado con dos servicios web separados: backend Flask y frontend React.
+Sistema completo de gestión para empresas constructoras que incluye gestión de proyectos, clientes, empleados, inventario y métricas ejecutivas. El proyecto está unificado con Flask sirviendo tanto la API como la aplicación React.
 
 ## Estructura del Proyecto
 ```
 Nexa-MVP/
-├── app.py                 # ✅ Aplicación Flask (solo backend API)
+├── app.py                 # ✅ Aplicación Flask principal (backend + frontend)
 ├── wsgi.py               # ✅ Punto de entrada WSGI para Render
 ├── requirements.txt      # ✅ Dependencias de Python
-├── render.yaml          # ✅ Configuración de Render (2 servicios web)
+├── render.yaml          # ✅ Configuración de Render (servicio unificado)
 ├── build.sh             # ✅ Script de build local
 ├── frontend/            # ✅ Código React
 │   ├── src/             # Código fuente React
@@ -19,19 +19,13 @@ Nexa-MVP/
 └── .gitignore           # Archivos ignorados por Git
 ```
 
-## Arquitectura de Servicios
+## Arquitectura Unificada
 
-### Backend (Flask) - Servicio Web Python
-- **Nombre**: `nexa-mvp-backend`
+### Servicio Único (Flask)
+- **Nombre**: `Nexa-MVP`
 - **Tipo**: Servicio web Python
-- **Función**: API RESTful para toda la lógica de negocio
+- **Función**: API RESTful + Servir frontend React
 - **Puerto**: Variable `$PORT` de Render
-
-### Frontend (React) - Servicio Web Node.js
-- **Nombre**: `nexa-mvp-frontend`
-- **Tipo**: Servicio web Node.js
-- **Función**: Interfaz de usuario React
-- **Puerto**: Variable `$PORT` de Render (diferente al backend)
 
 ## Características Principales
 
@@ -40,6 +34,7 @@ Nexa-MVP/
 - **Base de datos SQLAlchemy** con modelos para usuarios, proyectos, materiales, etc.
 - **Autenticación JWT** para proteger las rutas
 - **CORS configurado** para permitir peticiones del frontend
+- **Servir archivos estáticos** del frontend React compilado
 
 ### Frontend (React)
 - **Aplicación SPA** con React Router
@@ -49,28 +44,26 @@ Nexa-MVP/
 
 ## Configuración de Render
 
-### Backend Service
-```yaml
-buildCommand: |
-  pip install --upgrade pip setuptools wheel
-  pip install -r requirements.txt
-startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+### Build Command
+```bash
+cd frontend
+npm install
+npm run build
+cd ..
+pip install --upgrade pip setuptools wheel
+pip install -r requirements.txt
 ```
 
-### Frontend Service
-```yaml
-buildCommand: |
-  cd frontend
-  npm install
-  npm run build
-startCommand: cd frontend && npm start
+### Start Command
+```bash
+gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
 ```
 
 ## Endpoints de la API
 
 ### Rutas Públicas
-- `GET /` - Información de la API y endpoints disponibles
-- `GET /health` - Estado de salud del backend
+- `GET /` - Aplicación React (index.html)
+- `GET /health` - Estado de salud del servicio
 
 ### Rutas de Autenticación
 - `POST /api/auth/login` - Iniciar sesión
@@ -106,31 +99,22 @@ chmod +x build.sh
 ## Despliegue
 
 1. **Push al repositorio** - Render detecta cambios automáticamente
-2. **Build automático** - Se compilan ambos servicios simultáneamente
-3. **Servicios separados** - Backend y frontend corren en puertos diferentes
-4. **Comunicación** - Frontend se comunica con backend a través de la URL del servicio backend
+2. **Build automático** - Se compila el frontend y se instalan dependencias Python
+3. **Servidor único** - Flask sirve tanto la API como los archivos estáticos del frontend
 
-## Ventajas de la Arquitectura Separada
+## Ventajas de la Estructura Unificada
 
-- **Separación de responsabilidades** clara entre backend y frontend
-- **Escalabilidad independiente** de cada servicio
-- **Despliegue independiente** de cada componente
-- **Mejor mantenimiento** y debugging
-- **Flexibilidad** para usar diferentes tecnologías en cada servicio
-
-## Comunicación entre Servicios
-
-- El frontend obtiene la URL del backend desde `REACT_APP_API_URL`
-- Todas las llamadas API van del frontend al backend
-- CORS está configurado para permitir la comunicación
-- El backend maneja toda la lógica de negocio y base de datos
+- **Un solo servicio** en Render (más económico)
+- **Sin problemas de CORS** entre frontend y backend
+- **Despliegue simplificado** con un solo comando
+- **Mejor rendimiento** al servir archivos estáticos desde Flask
+- **Manejo de rutas SPA** con fallback a index.html
 
 ## Notas Importantes
 
-- Cada servicio tiene su propio puerto y URL en Render
-- El frontend se ejecuta con `npm start` en producción
-- El backend se ejecuta con `gunicorn` para mejor rendimiento
-- La base de datos se inicializa automáticamente en el backend
+- El frontend se compila durante el build y se sirve desde `frontend/build/`
+- Todas las rutas no encontradas redirigen al frontend (SPA routing)
+- La base de datos se inicializa automáticamente al importar la aplicación
 - Las variables de entorno se configuran automáticamente en Render
 
 ## Tecnologías Utilizadas
@@ -138,5 +122,5 @@ chmod +x build.sh
 - **Backend**: Flask, SQLAlchemy, JWT, CORS
 - **Frontend**: React, TypeScript, Material-UI, React Router
 - **Base de Datos**: PostgreSQL (Render), SQLite (desarrollo local)
-- **Despliegue**: Render, Gunicorn (backend), npm (frontend)
-- **Build**: pip (backend), npm (frontend)
+- **Despliegue**: Render, Gunicorn
+- **Build**: npm, pip

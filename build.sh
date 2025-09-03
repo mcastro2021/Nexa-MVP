@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚀 Building Nexa MVP (Services Architecture)..."
+echo "🚀 Building Nexa MVP (Unified Architecture)..."
 
 # Verificar que Node.js esté instalado
 if ! command -v node &> /dev/null; then
@@ -27,10 +27,7 @@ pip install -r requirements.txt
 
 echo "✅ Build completado exitosamente!"
 echo ""
-echo "🚀 Para ejecutar el backend: python app.py"
-echo "🌐 El backend estará disponible en: http://localhost:5000"
+echo "🚀 Para ejecutar la aplicación: python app.py"
+echo "🌐 La aplicación estará disponible en: http://localhost:5000"
 echo ""
-echo "🚀 Para ejecutar el frontend: cd frontend && npm start"
-echo "🌐 El frontend estará disponible en: http://localhost:3000"
-echo ""
-echo "📝 Nota: En producción, cada servicio corre en su propio puerto en Render"
+echo "📝 Nota: En producción, Flask sirve tanto la API como el frontend React"

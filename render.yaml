@@ -4,6 +4,10 @@ services:
     env: python
     plan: starter
     buildCommand: |
+      cd frontend
+      npm install
+      npm run build
+      cd ..
       pip install --upgrade pip setuptools wheel
       pip install -r requirements.txt
     startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
@@ -24,24 +28,6 @@ services:
         generateValue: true
       - key: CORS_ORIGIN
         value: "*"
-
-  - type: web
-    name: nexa-mvp-frontend
-    env: node
-    plan: starter
-    buildCommand: |
-      cd frontend
-      npm install
-      npm run build
-    startCommand: cd frontend && npm start
-    envVars:
-      - key: NODE_VERSION
-        value: "18"
-      - key: REACT_APP_API_URL
-        fromService:
-          name: nexa-mvp-backend
-          type: web
-          property: url
 
 databases:
   - name: nexa-mvp-db
