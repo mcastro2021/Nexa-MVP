@@ -10,10 +10,12 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
+      - key: PYTHONPATH
+        value: "/opt/render/project/src"
       - key: FLASK_ENV
         value: production
       - key: FLASK_APP
-        value: wsgi.py
+        value: app.py
       - key: DATABASE_URL
         fromDatabase:
           name: nexa-mvp-db
