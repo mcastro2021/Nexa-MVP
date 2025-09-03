@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    ports:
+      - "5000:8000"
+    environment:
+      - FLASK_ENV=development
+      - DATABASE_URL=postgresql://nexa_user:nexa_pass@db:5432/nexa_mvp
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+      - ./logs:/app/logs
+    command: gunicorn --config gunicorn.conf.py --reload app:app
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=nexa_mvp
+      - POSTGRES_USER=nexa_user
+      - POSTGRES_PASSWORD=nexa_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
