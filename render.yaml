@@ -5,11 +5,11 @@ services:
     plan: starter
     buildCommand: |
       pip install --upgrade pip setuptools wheel
-      pip install -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+      pip install -r backend/requirements.txt
+    startCommand: gunicorn backend.app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.18
+        value: 3.11.9
       - key: FLASK_ENV
         value: production
       - key: FLASK_APP
