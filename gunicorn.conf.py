@@ -1,27 +1,42 @@
-# Gunicorn Configuration - SOLO para evitar detección automática
-# Este NO es un proyecto Python - es Node.js/TypeScript
+# Gunicorn Configuration for Constructora E2E Platform
+# This file configures gunicorn to work with our FastAPI application
 
-import sys
-import os
+import multiprocessing
 
-# Configuración que falla intencionalmente
+# Server socket
 bind = "0.0.0.0:8000"
-workers = 1
-worker_class = "sync"
+backlog = 2048
+
+# Worker processes
+workers = multiprocessing.cpu_count() * 2 + 1
+worker_class = "uvicorn.workers.UvicornWorker"
+worker_connections = 1000
+max_requests = 1000
+max_requests_jitter = 50
 timeout = 30
+keepalive = 2
 
-def on_starting(server):
-    """Hook que falla al inicio"""
-    print("🚫 ERROR: Este NO es un proyecto Python!")
-    print("✅ Este es un proyecto Node.js/TypeScript")
-    print("📁 Usar render.yaml para configuración")
-    print("🔧 Servicios: web, api, worker")
-    
-    # Fallar intencionalmente
-    server.log.error("Render está configurado incorrectamente")
-    sys.exit(1)
+# Restart workers after this many requests, to help prevent memory leaks
+max_requests = 1000
+max_requests_jitter = 50
 
-def when_ready(server):
-    """Hook que falla cuando está listo"""
-    server.log.error("🚫 NO usar gunicorn - usar render.yaml")
-    sys.exit(1)
+# Logging
+accesslog = "-"
+errorlog = "-"
+loglevel = "info"
+access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
+
+# Process naming
+proc_name = "constructora-api"
+
+# Server mechanics
+daemon = False
+pidfile = None
+umask = 0
+user = None
+group = None
+tmp_upload_dir = None
+
+# SSL (if needed)
+# keyfile = None
+# certfile = None
