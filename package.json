@@ -3,10 +3,7 @@
   "version": "1.0.0",
   "description": "Plataforma E2E para Constructora con gestión completa de proyectos, stock, RRHH y KPIs",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "main": "apps/api/src/index.ts",
   "scripts": {
     "dev": "concurrently \"npm run dev:web\" \"npm run dev:api\" \"npm run dev:worker\"",
     "dev:web": "npm run dev --workspace=apps/web",
@@ -16,7 +13,10 @@
     "build:web": "npm run build --workspace=apps/web",
     "build:api": "npm run build --workspace=apps/api",
     "build:worker": "npm run build --workspace=apps/worker",
-    "start": "npm run start --workspaces",
+    "start": "npm run start --workspace=apps/api",
+    "start:web": "npm run start --workspace=apps/web",
+    "start:api": "npm run start --workspace=apps/api",
+    "start:worker": "npm run start --workspace=apps/worker",
     "db:generate": "npm run prisma:generate --workspace=apps/api",
     "db:migrate": "npm run prisma:migrate --workspace=apps/api",
     "db:seed": "npm run seed --workspace=apps/api",
@@ -25,6 +25,10 @@
     "test": "npm run test --workspaces",
     "clean": "npm run clean --workspaces && rm -rf node_modules"
   },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "devDependencies": {
     "concurrently": "^8.2.2",
     "typescript": "^5.3.3"
