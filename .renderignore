@@ -1,0 +1,11 @@
+# Excluir archivos que puedan causar confusión en Render
+*.py
+*.pyc
+__pycache__/
+venv/
+.env
+.env.local
+node_modules/
+dist/
+build/
+*.log
