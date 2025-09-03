@@ -1,3 +1,6 @@
+# Render Blueprint for Constructora E2E Platform
+# This is a Node.js/TypeScript project, NOT Python
+
 services:
   - type: web
     name: constructora-web
@@ -10,6 +13,7 @@ services:
         value: production
     healthCheckPath: /
     autoDeploy: true
+    plan: starter
 
   - type: web
     name: constructora-api
@@ -24,6 +28,7 @@ services:
         generateValue: true
     healthCheckPath: /healthz
     autoDeploy: true
+    plan: starter
 
   - type: worker
     name: constructora-worker
@@ -35,6 +40,7 @@ services:
       - key: NODE_ENV
         value: production
     autoDeploy: true
+    plan: starter
 
 databases:
   - name: constructora-db
@@ -44,3 +50,6 @@ servicesPlus:
   - type: redis
     name: constructora-redis
     plan: starter
+
+# Force Node.js environment
+env: node
