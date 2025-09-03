@@ -11,9 +11,9 @@ from pydantic import BaseModel
 from typing import Optional, List
 import os
 import json
+import hashlib
 from datetime import datetime, timedelta
 import jwt
-from passlib.context import CryptContext
 
 # Configuración de la aplicación
 app = FastAPI(
@@ -32,7 +32,6 @@ app.add_middleware(
 )
 
 # Configuración de seguridad
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
 # Configuración JWT
@@ -66,6 +65,10 @@ class Milestone(BaseModel):
     fecha_plan: datetime
     fecha_real: Optional[datetime] = None
 
+# Función simple de hash (sin bcrypt)
+def hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
+
 # Datos de prueba (en producción usar base de datos)
 DEMO_USERS = {
     "cliente@demo.com": {
@@ -73,28 +76,28 @@ DEMO_USERS = {
         "email": "cliente@demo.com",
         "nombre": "Cliente Demo",
         "role": "CLIENTE",
-        "password_hash": pwd_context.hash("password123")
+        "password_hash": hash_password("password123")
     },
     "admin@demo.com": {
         "id": "2",
         "email": "admin@demo.com",
         "nombre": "Admin Demo",
         "role": "ADMIN",
-        "password_hash": pwd_context.hash("password123")
+        "password_hash": hash_password("password123")
     },
     "logistica@demo.com": {
         "id": "3",
         "email": "logistica@demo.com",
         "nombre": "Logística Demo",
         "role": "LOGISTICA",
-        "password_hash": pwd_context.hash("password123")
+        "password_hash": hash_password("password123")
     },
     "ejecutivo@demo.com": {
         "id": "4",
         "email": "ejecutivo@demo.com",
         "nombre": "Ejecutivo Demo",
         "role": "EJECUTIVO",
-        "password_hash": pwd_context.hash("password123")
+        "password_hash": hash_password("password123")
     }
 }
 
@@ -136,7 +139,7 @@ DEMO_MILESTONES = [
 
 # Funciones de utilidad
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    return hash_password(plain_password) == hashed_password
 
 def create_access_token(data: dict):
     to_encode = data.copy()
