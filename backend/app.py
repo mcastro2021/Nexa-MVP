@@ -16,7 +16,13 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'jwt-secret-string')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
 
-CORS(app, supports_credentials=True)
+# Configuración de CORS más específica
+CORS(app, 
+     supports_credentials=True,
+     origins=["*"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+     allow_headers=["Content-Type", "Authorization", "X-Requested-With"])
+
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
 
@@ -505,13 +511,54 @@ def create_calendar_event():
     
     return jsonify({'message': 'Event created successfully', 'id': event.id}), 201
 
+# Rutas básicas
+@app.route('/')
+def index():
+    return jsonify({
+        'message': 'Nexa MVP API is running',
+        'status': 'healthy',
+        'version': '1.0.0'
+    })
+
+@app.route('/health')
+def health():
+    return jsonify({
+        'status': 'healthy',
+        'timestamp': datetime.utcnow().isoformat()
+    })
+
 # Crear tablas
 @app.route('/api/init-db', methods=['POST'])
 def init_db():
     db.create_all()
     return jsonify({'message': 'Database initialized successfully'})
 
+# Manejo de errores
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({
+        'error': 'Not Found',
+        'message': 'The requested URL was not found on the server.',
+        'status': 404
+    }), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({
+        'error': 'Internal Server Error',
+        'message': 'An internal server error occurred.',
+        'status': 500
+    }), 500
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True)
+
+# Inicializar la base de datos cuando se importa el módulo
+with app.app_context():
+    try:
+        db.create_all()
+        print("Database tables created successfully")
+    except Exception as e:
+        print(f"Error creating database tables: {e}")
