@@ -1,0 +1,476 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role { 
+  CLIENTE 
+  ADMIN 
+  LOGISTICA 
+  EJECUTIVO 
+}
+
+enum ProyectoTipo { 
+  WOOD_FRAME 
+  STEEL_FRAME 
+}
+
+enum HitoEstado { 
+  PENDIENTE 
+  EN_PROGRESO 
+  COMPLETADO 
+  ATRASADO 
+}
+
+enum TicketEstado { 
+  ABIERTO 
+  EN_PROGRESO 
+  RESUELTO 
+  CERRADO 
+}
+
+enum LicenciaTipo { 
+  VACACIONES 
+  ENFERMEDAD 
+  OTRA 
+}
+
+enum DocTipo { 
+  CONTRATO 
+  ADENDA 
+  FACTURA 
+  RECIBO_SUELDO 
+  PLANO 
+  OTRO 
+}
+
+enum OrdenEstado {
+  ABIERTA
+  PARCIAL
+  COMPLETADA
+  CANCELADA
+}
+
+model Usuario {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  hash        String
+  nombre      String
+  telefono    String?
+  role        Role
+  activo      Boolean  @default(true)
+  creadoEn    DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+  
+  // Relaciones
+  cliente     Cliente?
+  empleado    Empleado?
+  tickets     Ticket[]
+  eventos     EventoCalendario[]
+  
+  @@map("usuarios")
+}
+
+model Cliente {
+  id           String     @id @default(cuid())
+  usuarioId    String     @unique
+  usuario      Usuario    @relation(fields: [usuarioId], references: [id])
+  direccion    String?
+  dni          String?    @unique
+  fechaNacimiento DateTime?
+  creadoEn     DateTime   @default(now())
+  
+  // Relaciones
+  proyectos    Proyecto[]
+  pagos        Pago[]
+  facturas     Factura[]
+  acuerdos     AcuerdoFinanciero[]
+  documentos   Documento[]
+  nps          NPS[]
+  
+  @@map("clientes")
+}
+
+model Empleado {
+  id           String   @id @default(cuid())
+  usuarioId    String   @unique
+  usuario      Usuario  @relation(fields: [usuarioId], references: [id])
+  area         String
+  puesto       String
+  antiguedad   Int      // meses
+  biometriaRef String?  // id externo (no almacenar biometría cruda)
+  activo       Boolean  @default(true)
+  segurosOk    Boolean  @default(false)
+  fechaIngreso DateTime @default(now())
+  salario      Float?
+  
+  // Relaciones
+  ausencias    Ausencia[]
+  licencias    Licencia[]
+  recibos      Documento[]
+  proyectos    ProyectoPersonal[]
+  
+  @@map("empleados")
+}
+
+model Proyecto {
+  id            String        @id @default(cuid())
+  clienteId     String
+  cliente       Cliente       @relation(fields: [clienteId], references: [id])
+  nombre        String
+  tipo          ProyectoTipo
+  m2            Int
+  direccion     String
+  fechaInicio   DateTime
+  fechaEntrega  DateTime
+  estado        String        @default("PLANIFICADO") // PLANIFICADO, EN_OBRA, COMPLETADO, PAUSADO
+  presupuesto   Float?
+  creadoEn      DateTime      @default(now())
+  
+  // Relaciones
+  hitos         Hito[]
+  materiales    RequerimientoMaterial[]
+  personal      ProyectoPersonal[]
+  logistica     Logistica[]
+  documentos    Documento[]
+  costos        CostoObra[]
+  
+  @@map("proyectos")
+}
+
+model Hito {
+  id          String       @id @default(cuid())
+  proyectoId  String
+  proyecto    Proyecto     @relation(fields: [proyectoId], references: [id])
+  nombre      String
+  descripcion String?
+  estado      HitoEstado   @default(PENDIENTE)
+  fechaPlan   DateTime
+  fechaReal   DateTime?
+  porcentaje  Int          @default(0) // 0-100
+  notas       String?
+  creadoEn    DateTime     @default(now())
+  
+  // Relaciones
+  fotos       Documento[]
+  
+  @@map("hitos")
+}
+
+model Proveedor {
+  id        String      @id @default(cuid())
+  nombre    String
+  email     String?
+  telefono  String?
+  direccion String?
+  cuit      String?     @unique
+  activo    Boolean     @default(true)
+  creadoEn  DateTime    @default(now())
+  
+  // Relaciones
+  contratos Contrato[]
+  ordenes   OrdenCompra[]
+  
+  @@map("proveedores")
+}
+
+model Contrato {
+  id           String     @id @default(cuid())
+  proveedorId  String
+  proveedor    Proveedor  @relation(fields: [proveedorId], references: [id])
+  clienteId    String?
+  cliente      Cliente?   @relation(fields: [clienteId], references: [id])
+  numero       String
+  descripcion  String?
+  monto        Float?
+  inicio       DateTime
+  fin          DateTime?
+  estado       String     @default("VIGENTE") // VIGENTE, VENCIDO, CANCELADO
+  creadoEn     DateTime   @default(now())
+  
+  // Relaciones
+  adendas      Documento[]
+  archivo      Documento?
+  
+  @@map("contratos")
+}
+
+model StockItem {
+  id          String   @id @default(cuid())
+  sku         String   @unique
+  nombre      String
+  descripcion String?
+  unidad      String   // ej: m, kg, unidad
+  stock       Float    @default(0)
+  minimo      Float    @default(0)
+  costoStd    Float    @default(0)
+  leadTimeDias Int     @default(0)
+  categoria   String?
+  activo      Boolean  @default(true)
+  creadoEn    DateTime @default(now())
+  
+  // Relaciones
+  ordenes     OCItem[]
+  requerimientos RequerimientoMaterial[]
+  
+  @@map("stock_items")
+}
+
+model OrdenCompra {
+  id           String      @id @default(cuid())
+  proveedorId  String
+  proveedor    Proveedor   @relation(fields: [proveedorId], references: [id])
+  numero       String      @unique
+  fecha        DateTime    @default(now())
+  estado       OrdenEstado @default(ABIERTA)
+  total        Float       @default(0)
+  fechaEntrega DateTime?
+  notas        String?
+  
+  // Relaciones
+  items        OCItem[]
+  factura      Factura?
+  fechaPagoPlan DateTime?
+  fechaPagoReal DateTime?
+  
+  @@map("ordenes_compra")
+}
+
+model OCItem {
+  id           String     @id @default(cuid())
+  ordenId      String
+  orden        OrdenCompra @relation(fields: [ordenId], references: [id])
+  stockItemId  String
+  stockItem    StockItem   @relation(fields: [stockItemId], references: [id])
+  cantidad     Float
+  precioUnit   Float
+  subtotal     Float       @default(0)
+  
+  @@map("oc_items")
+}
+
+model RequerimientoMaterial {
+  id           String     @id @default(cuid())
+  proyectoId   String
+  proyecto     Proyecto   @relation(fields: [proyectoId], references: [id])
+  stockItemId  String
+  stockItem    StockItem  @relation(fields: [stockItemId], references: [id])
+  cantidadPlan Float
+  cantidadReal Float      @default(0)
+  fechaRequerida DateTime?
+  
+  @@map("requerimientos_materiales")
+}
+
+model Logistica {
+  id           String    @id @default(cuid())
+  proyectoId   String
+  proyecto     Proyecto  @relation(fields: [proyectoId], references: [id])
+  fecha        DateTime
+  tipo         String    // FLETE, MATERIALES, PERSONAL
+  proveedor    String?   // flete
+  detalle      String?
+  costo        Float?
+  estado       String    @default("PLANIFICADO") // PLANIFICADO, EN_CURSO, COMPLETADO
+  
+  @@map("logistica")
+}
+
+model ProyectoPersonal {
+  id          String   @id @default(cuid())
+  proyectoId  String
+  proyecto    Proyecto @relation(fields: [proyectoId], references: [id])
+  empleadoId  String
+  empleado    Empleado  @relation(fields: [empleadoId], references: [id])
+  rol         String    // capataz, oficial, ayudante, etc.
+  fechaInicio DateTime @default(now())
+  fechaFin    DateTime?
+  activo      Boolean  @default(true)
+  
+  @@map("proyecto_personal")
+}
+
+model Pago {
+  id          String    @id @default(cuid())
+  clienteId   String
+  cliente     Cliente   @relation(fields: [clienteId], references: [id])
+  proyectoId  String
+  proyecto    Proyecto  @relation(fields: [proyectoId], references: [id])
+  fecha       DateTime  @default(now())
+  monto       Float
+  concepto    String
+  tipo        String    @default("CUOTA") // CUOTA, ADELANTO, FINAL
+  estado      String    @default("PENDIENTE") // PENDIENTE, PAGADO, VENCIDO
+  vencimiento DateTime?
+  
+  // Relaciones
+  comprobante Documento?
+  
+  @@map("pagos")
+}
+
+model Factura {
+  id          String   @id @default(cuid())
+  numero      String   @unique
+  clienteId   String?
+  cliente     Cliente? @relation(fields: [clienteId], references: [id])
+  ordenId     String?
+  orden       OrdenCompra? @relation(fields: [ordenId], references: [id])
+  fecha       DateTime @default(now())
+  total       Float
+  subtotal    Float?
+  iva         Float?
+  estado      String   @default("EMITIDA") // EMITIDA, PAGADA, VENCIDA
+  vencimiento DateTime?
+  
+  // Relaciones
+  archivo     Documento?
+  
+  @@map("facturas")
+}
+
+model AcuerdoFinanciero {
+  id         String   @id @default(cuid())
+  clienteId  String
+  cliente    Cliente  @relation(fields: [clienteId], references: [id])
+  detalle    String
+  monto      Float?
+  vigencia   DateTime
+  estado     String   @default("VIGENTE") // VIGENTE, VENCIDO, CANCELADO
+  creadoEn   DateTime @default(now())
+  
+  @@map("acuerdos_financieros")
+}
+
+model Documento {
+  id          String   @id @default(cuid())
+  tipo        DocTipo
+  nombre      String
+  url         String
+  mimeType    String?
+  size        Int?
+  creadoEn    DateTime @default(now())
+  
+  // Relaciones opcionales
+  clienteId   String?
+  empleadoId  String?
+  proyectoId  String?
+  hitoId      String?
+  contratoId  String?
+  facturaId   String?
+  pagoId      String?
+  
+  @@map("documentos")
+}
+
+model Ausencia {
+  id          String   @id @default(cuid())
+  empleadoId  String
+  empleado    Empleado @relation(fields: [empleadoId], references: [id])
+  fecha       DateTime
+  motivo      String
+  justificada Boolean  @default(false)
+  creadoEn    DateTime @default(now())
+  
+  @@map("ausencias")
+}
+
+model Licencia {
+  id          String       @id @default(cuid())
+  empleadoId  String
+  empleado    Empleado     @relation(fields: [empleadoId], references: [id])
+  tipo        LicenciaTipo
+  desde       DateTime
+  hasta       DateTime
+  motivo      String?
+  aprobada    Boolean      @default(false)
+  creadoEn    DateTime     @default(now())
+  
+  @@map("licencias")
+}
+
+model Ticket {
+  id         String       @id @default(cuid())
+  usuarioId  String
+  usuario    Usuario      @relation(fields: [usuarioId], references: [id])
+  asunto     String
+  descripcion String?
+  estado     TicketEstado @default(ABIERTO)
+  prioridad  String       @default("MEDIA") // BAJA, MEDIA, ALTA, CRITICA
+  categoria  String?      // SOPORTE, FACTURACION, TECNICO, OTRO
+  asignadoA  String?      // ID del empleado asignado
+  creadoEn   DateTime     @default(now())
+  resueltoEn DateTime?
+  
+  @@map("tickets")
+}
+
+model FAQ {
+  id        String   @id @default(cuid())
+  etapa     String   // pre o post-contrato
+  categoria String?  // GENERAL, PAGOS, OBRAS, MATERIALES
+  pregunta  String
+  respuesta String
+  activa    Boolean  @default(true)
+  orden     Int      @default(0)
+  creadoEn  DateTime @default(now())
+  
+  @@map("faqs")
+}
+
+model NPS {
+  id         String   @id @default(cuid())
+  clienteId  String
+  cliente    Cliente  @relation(fields: [clienteId], references: [id])
+  valor      Int      // 0-10
+  comentario String?
+  creadoEn   DateTime @default(now())
+  
+  @@map("nps")
+}
+
+model CostoObra {
+  id          String   @id @default(cuid())
+  proyectoId  String
+  proyecto    Proyecto @relation(fields: [proyectoId], references: [id])
+  concepto    String
+  montoPlan   Float
+  montoReal   Float?
+  fecha       DateTime @default(now())
+  tipo        String   // MATERIALES, MANO_OBRA, LOGISTICA, OTROS
+  
+  @@map("costos_obra")
+}
+
+model EventoCalendario {
+  id          String   @id @default(cuid())
+  usuarioId   String
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id])
+  titulo      String
+  descripcion String?
+  fechaInicio DateTime
+  fechaFin    DateTime
+  tipo        String   // REUNION, VISITA_OBRA, VENCIMIENTO, AUDITORIA
+  color       String?  // color del evento
+  creadoEn    DateTime @default(now())
+  
+  @@map("eventos_calendario")
+}
+
+model ChatbotSession {
+  id          String   @id @default(cuid())
+  sessionId   String   @unique
+  usuarioId   String?
+  mensajes    Json[]   // array de mensajes
+  intencion   String?
+  estado      String   @default("ACTIVA") // ACTIVA, ESCALADA, CERRADA
+  creadoEn    DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+  
+  @@map("chatbot_sessions")
+}
