@@ -545,7 +545,15 @@ def init_db():
 # Inicializar base de datos al arrancar
 @app.before_first_request
 def create_tables():
-    db.create_all()
+    try:
+        db.create_all()
+        print("Database tables created successfully")
+    except Exception as e:
+        print(f"Error creating database tables: {e}")
+        # Fallback: usar SQLite si PostgreSQL falla
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///nexa_mvp.db'
+        db.create_all()
+        print("Fallback to SQLite database")
 
 if __name__ == '__main__':
     with app.app_context():

@@ -24,6 +24,8 @@ services:
         generateValue: true
       - key: CORS_ORIGIN
         value: "*"
+      - key: PYTHONPATH
+        value: "/opt/render/project/src"
 
   - type: web
     name: nexa-mvp-frontend
