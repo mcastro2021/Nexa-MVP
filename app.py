@@ -7,6 +7,8 @@ Esta es la aplicación principal que Render ejecutará con gunicorn
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import Optional, List
 import os
@@ -30,6 +32,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Montar archivos estáticos
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Configuración de seguridad
 security = HTTPBearer()
@@ -164,10 +169,27 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
 # Endpoints
 @app.get("/")
 async def root():
+    """Servir el frontend HTML"""
+    return FileResponse("static/index.html")
+
+@app.get("/api")
+async def api_info():
+    """Información de la API"""
     return {
         "message": "Constructora E2E Platform",
         "version": "1.0.0",
-        "status": "running"
+        "status": "running",
+        "endpoints": [
+            "/auth/login",
+            "/me",
+            "/kpi/obras",
+            "/kpi/finanzas", 
+            "/kpi/personal",
+            "/proyectos",
+            "/proyectos/{id}/hitos",
+            "/faqs",
+            "/chatbot/query"
+        ]
     }
 
 @app.get("/healthz")

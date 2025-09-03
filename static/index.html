@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constructora E2E Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div x-data="app()" class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">🏗️ Constructora E2E Platform</h1>
+            <p class="text-xl text-gray-600">Gestión completa de proyectos, stock, RRHH y KPIs</p>
+        </header>
+
+        <!-- Login Section -->
+        <div x-show="!isLoggedIn" class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-2xl font-semibold mb-4 text-center">Iniciar Sesión</h2>
+            <form @submit.prevent="login">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                    <input x-model="loginForm.email" type="email" required 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Contraseña</label>
+                    <input x-model="loginForm.password" type="password" required 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
+                    Iniciar Sesión
+                </button>
+            </form>
+            
+            <!-- Demo Users -->
+            <div class="mt-4 text-sm text-gray-600">
+                <p class="font-semibold mb-2">Usuarios Demo:</p>
+                <div class="space-y-1">
+                    <div>👤 Cliente: cliente@demo.com</div>
+                    <div>🏢 Admin: admin@demo.com</div>
+                    <div>📦 Logística: logistica@demo.com</div>
+                    <div> Ejecutivo: ejecutivo@demo.com</div>
+                    <div class="text-xs">Contraseña: password123</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div x-show="isLoggedIn" class="space-y-8">
+            <!-- User Info -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-gray-800">Bienvenido, <span x-text="user.nombre"></span></h2>
+                        <p class="text-gray-600">Rol: <span x-text="user.role" class="font-semibold"></span></p>
+                    </div>
+                    <button @click="logout" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors">
+                        Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+
+            <!-- KPIs Section -->
+            <div x-show="user.role === 'EJECUTIVO' || user.role === 'ADMIN'" class="grid md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">📊 KPIs Obras</h3>
+                    <div x-show="kpis.obras" class="space-y-2">
+                        <p>Total: <span x-text="kpis.obras.total" class="font-bold text-blue-600"></span></p>
+                        <p>Promedio: <span x-text="kpis.obras.promedioDias" class="font-bold text-green-600"></span> días</p>
+                    </div>
+                    <button @click="loadKPIs('obras')" class="mt-2 bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                        Cargar
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">💰 KPIs Finanzas</h3>
+                    <div x-show="kpis.finanzas" class="space-y-2">
+                        <p>Ingresos: $<span x-text="kpis.finanzas.ingresos?.toLocaleString()" class="font-bold text-green-600"></span></p>
+                        <p>Utilidad: $<span x-text="kpis.finanzas.utilidad?.toLocaleString()" class="font-bold text-blue-600"></span></p>
+                    </div>
+                    <button @click="loadKPIs('finanzas')" class="mt-2 bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                        Cargar
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">👥 KPIs Personal</h3>
+                    <div x-show="kpis.personal" class="space-y-2">
+                        <p>Total: <span x-text="kpis.personal.total_empleados" class="font-bold text-blue-600"></span></p>
+                        <p>Activos: <span x-text="kpis.personal.activos" class="font-bold text-green-600"></span></p>
+                    </div>
+                    <button @click="loadKPIs('personal')" class="mt-2 bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                        Cargar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Projects Section -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">📋 Proyectos</h3>
+                <div x-show="projects.length > 0" class="space-y-4">
+                    <template x-for="project in projects" :key="project.id">
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-lg" x-text="project.nombre"></h4>
+                            <p class="text-gray-600" x-text="`${project.tipo} - ${project.m2}m²`"></p>
+                            <p class="text-sm text-gray-500" x-text="`Dirección: ${project.direccion}`"></p>
+                        </div>
+                    </template>
+                </div>
+                <button @click="loadProjects" class="mt-4 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
+                    Cargar Proyectos
+                </button>
+            </div>
+
+            <!-- Chatbot Section -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">🤖 Chatbot</h3>
+                <div class="space-y-4">
+                    <div class="flex space-x-2">
+                        <input x-model="chatbotQuery" type="text" placeholder="Haz una pregunta..." 
+                               class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button @click="askChatbot" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                            Preguntar
+                        </button>
+                    </div>
+                    <div x-show="chatbotResponse" class="bg-gray-100 rounded-lg p-4">
+                        <p class="font-semibold text-gray-800">Respuesta:</p>
+                        <p x-text="chatbotResponse.respuesta" class="text-gray-700 mt-2"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function app() {
+            return {
+                isLoggedIn: false,
+                user: {},
+                kpis: {},
+                projects: [],
+                chatbotQuery: '',
+                chatbotResponse: null,
+                loginForm: {
+                    email: '',
+                    password: ''
+                },
+
+                async login() {
+                    try {
+                        const response = await fetch('/auth/login', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(this.loginForm)
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            localStorage.setItem('token', data.token);
+                            this.user = data.user;
+                            this.isLoggedIn = true;
+                            this.loadProjects();
+                        } else {
+                            alert('Error en el login. Verifica tus credenciales.');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Error de conexión.');
+                    }
+                },
+
+                logout() {
+                    localStorage.removeItem('token');
+                    this.isLoggedIn = false;
+                    this.user = {};
+                    this.kpis = {};
+                    this.projects = [];
+                    this.chatbotResponse = null;
+                },
+
+                async loadKPIs(type) {
+                    try {
+                        const token = localStorage.getItem('token');
+                        const response = await fetch(`/kpi/${type}`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.kpis[type] = data;
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                },
+
+                async loadProjects() {
+                    try {
+                        const token = localStorage.getItem('token');
+                        const response = await fetch('/proyectos', {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.projects = data;
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                },
+
+                async askChatbot() {
+                    if (!this.chatbotQuery.trim()) return;
+
+                    try {
+                        const token = localStorage.getItem('token');
+                        const response = await fetch('/chatbot/query', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ query: this.chatbotQuery })
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.chatbotResponse = data;
+                            this.chatbotQuery = '';
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
