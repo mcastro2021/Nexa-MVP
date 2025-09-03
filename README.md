@@ -1,279 +1,142 @@
-# Nexa MVP - Sistema de Gestión para Constructora
+# Nexa MVP - Sistema de Gestión con Servicios Separados
 
 ## Descripción
-Nexa MVP es un sistema de gestión integral para constructoras que permite a clientes, administradores, personal de logística y ejecutivos gestionar proyectos, pagos, stock y métricas de manera eficiente.
+Sistema completo de gestión para empresas constructoras que incluye gestión de proyectos, clientes, empleados, inventario y métricas ejecutivas. El proyecto está estructurado con dos servicios web separados: backend Flask y frontend React.
+
+## Estructura del Proyecto
+```
+Nexa-MVP/
+├── app.py                 # ✅ Aplicación Flask (solo backend API)
+├── wsgi.py               # ✅ Punto de entrada WSGI para Render
+├── requirements.txt      # ✅ Dependencias de Python
+├── render.yaml          # ✅ Configuración de Render (2 servicios web)
+├── build.sh             # ✅ Script de build local
+├── frontend/            # ✅ Código React
+│   ├── src/             # Código fuente React
+│   ├── public/          # Archivos públicos
+│   ├── package.json     # Dependencias Node.js
+│   └── build/           # Archivos compilados (generados automáticamente)
+└── .gitignore           # Archivos ignorados por Git
+```
+
+## Arquitectura de Servicios
+
+### Backend (Flask) - Servicio Web Python
+- **Nombre**: `nexa-mvp-backend`
+- **Tipo**: Servicio web Python
+- **Función**: API RESTful para toda la lógica de negocio
+- **Puerto**: Variable `$PORT` de Render
+
+### Frontend (React) - Servicio Web Node.js
+- **Nombre**: `nexa-mvp-frontend`
+- **Tipo**: Servicio web Node.js
+- **Función**: Interfaz de usuario React
+- **Puerto**: Variable `$PORT` de Render (diferente al backend)
 
 ## Características Principales
 
-### 🏗️ Gestión de Proyectos
-- Seguimiento del progreso de obras
-- Estados de proyectos (Pendiente, En Progreso, Completado)
-- Visualización de avances con barras de progreso
+### Backend (Flask)
+- **API RESTful** con endpoints para autenticación, clientes, administración, etc.
+- **Base de datos SQLAlchemy** con modelos para usuarios, proyectos, materiales, etc.
+- **Autenticación JWT** para proteger las rutas
+- **CORS configurado** para permitir peticiones del frontend
 
-### 💰 Control de Pagos
-- Gestión de pagos por proyecto
-- Estados de pago (Pendiente, En Progreso, Completado)
-- Historial de transacciones
+### Frontend (React)
+- **Aplicación SPA** con React Router
+- **Material-UI** para componentes de interfaz
+- **Autenticación** integrada con el backend
+- **Dashboard responsivo** para diferentes roles de usuario
 
-### 📦 Control de Stock
-- Inventario de materiales de construcción
-- Alertas de stock bajo
-- Gestión de niveles mínimos
+## Configuración de Render
 
-### 👥 Gestión de Usuarios
-- Sistema de roles (Cliente, Admin, Logística, Ejecutivo)
-- Dashboards personalizados por rol
-- Autenticación segura con JWT
+### Backend Service
+```yaml
+buildCommand: |
+  pip install --upgrade pip setuptools wheel
+  pip install -r requirements.txt
+startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+```
 
-### 🤖 Asistente Virtual
-- Chatbot integrado con respuestas inteligentes
-- Integración con WhatsApp
-- Preguntas frecuentes automatizadas
+### Frontend Service
+```yaml
+buildCommand: |
+  cd frontend
+  npm install
+  npm run build
+startCommand: cd frontend && npm start
+```
 
-## Tecnologías Utilizadas
+## Endpoints de la API
+
+### Rutas Públicas
+- `GET /` - Información de la API y endpoints disponibles
+- `GET /health` - Estado de salud del backend
+
+### Rutas de Autenticación
+- `POST /api/auth/login` - Iniciar sesión
+- `POST /api/auth/register` - Registrarse
+
+### Rutas Protegidas (requieren JWT)
+- `GET /api/profile` - Perfil del usuario
+- `GET /api/client/projects` - Proyectos del cliente
+- `GET /api/admin/stock` - Inventario de materiales
+- `GET /api/executive/metrics` - Métricas ejecutivas
+- `POST /api/chatbot` - Chatbot inteligente
+
+## Desarrollo Local
 
 ### Backend
-- **Flask** con Python 3.11
-- **SQLAlchemy** para ORM
-- **Flask-JWT-Extended** para autenticación
-- **PostgreSQL** en producción / SQLite en desarrollo
-- **Flask-CORS** para comunicación con frontend
-
-### Frontend
-- **React 18** con TypeScript
-- **Material-UI (MUI)** para componentes de interfaz
-- **React Router** para navegación
-- **React Query** para gestión de estado
-- **Recharts** para gráficos y métricas
-- **Axios** para peticiones HTTP
-
-### Características Técnicas
-- Diseño responsive para móviles y desktop
-- Fallback a datos mock si el backend no está disponible
-- Optimizado para despliegue en Render
-
-## Instalación y Configuración
-
-### Prerrequisitos
-- Python 3.11 o superior
-- Node.js 18 o superior
-- npm o yarn
-
-### Instalación Local
-
-#### Backend
-1. Navega al directorio del backend:
-```bash
-cd backend
-```
-
-2. Crea un entorno virtual:
-```bash
-python -m venv venv
-source venv/bin/activate  # En Windows: venv\Scripts\activate
-```
-
-3. Instala las dependencias:
-```bash
-pip install -r requirements.txt
-```
-
-4. Configura las variables de entorno (crea un archivo `.env`):
-```env
-SECRET_KEY=tu-clave-secreta-aqui
-JWT_SECRET_KEY=tu-jwt-secret-aqui
-DATABASE_URL=sqlite:///nexa_mvp.db
-FLASK_ENV=development
-```
-
-5. Inicializa la base de datos:
 ```bash
 python app.py
 ```
 
-#### Frontend
-1. Navega al directorio del frontend:
+### Frontend
 ```bash
 cd frontend
-```
-
-2. Instala las dependencias:
-```bash
 npm install
-```
-
-3. Inicia el servidor de desarrollo:
-```bash
 npm start
 ```
 
-4. Abre tu navegador en `http://localhost:3000`
-
-### Despliegue en Render
-
-El proyecto está configurado para desplegarse automáticamente en Render:
-
-1. **Backend**: Se despliega como servicio web Python
-2. **Frontend**: Se despliega como sitio estático
-3. **Base de datos**: PostgreSQL automática
-
-La configuración en `render.yaml` incluye:
-- Variables de entorno automáticas
-- Conexión entre frontend y backend
-- Base de datos PostgreSQL
-
-## Usuarios de Prueba
-
-El sistema incluye usuarios de demostración:
-
-| Usuario | Contraseña | Rol | Acceso |
-|---------|------------|-----|--------|
-| `cliente` | `cliente123` | Cliente | Proyectos propios, pagos |
-| `admin` | `admin123` | Administrador | Stock, pagos, empleados |
-| `logistica` | `logistica123` | Logística | Stock, rutas de trabajo |
-| `ejecutivo` | `ejecutivo123` | Ejecutivo | Métricas generales, reportes |
-
-## Estructura del Proyecto
-
-```
-Nexa-MVP/
-├── backend/
-│   ├── app.py              # Aplicación principal Flask
-│   ├── config.py           # Configuración
-│   ├── requirements.txt    # Dependencias Python
-│   ├── wsgi.py            # WSGI para producción
-│   └── gunicorn.conf.py   # Configuración Gunicorn
-├── frontend/
-│   ├── public/
-│   │   ├── index.html
-│   │   ├── config.js       # Configuración del frontend
-│   │   └── manifest.json
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Chatbot.tsx    # Asistente virtual
-│   │   │   └── Layout.tsx     # Layout principal
-│   │   ├── contexts/
-│   │   │   └── AuthContext.tsx # Contexto de autenticación
-│   │   ├── pages/
-│   │   │   ├── Dashboard.tsx   # Dashboard principal
-│   │   │   ├── Login.tsx      # Página de login
-│   │   │   ├── Projects.tsx   # Gestión de proyectos
-│   │   │   ├── Payments.tsx   # Gestión de pagos
-│   │   │   ├── Stock.tsx      # Control de inventario
-│   │   │   ├── Employees.tsx  # Gestión de empleados
-│   │   │   ├── WorkRoute.tsx  # Rutas de trabajo
-│   │   │   ├── ExecutiveMetrics.tsx # Métricas ejecutivas
-│   │   │   └── Calendar.tsx   # Calendario
-│   │   ├── App.tsx           # Componente principal
-│   │   └── index.tsx         # Punto de entrada
-│   ├── package.json
-│   └── tsconfig.json
-├── render.yaml              # Configuración de Render
-└── README.md
+### Build Completo
+```bash
+chmod +x build.sh
+./build.sh
 ```
 
-## API Endpoints
+## Despliegue
 
-### Autenticación
-- `POST /api/auth/login` - Iniciar sesión
-- `POST /api/auth/register` - Registrar usuario
-- `GET /api/profile` - Obtener perfil del usuario
+1. **Push al repositorio** - Render detecta cambios automáticamente
+2. **Build automático** - Se compilan ambos servicios simultáneamente
+3. **Servicios separados** - Backend y frontend corren en puertos diferentes
+4. **Comunicación** - Frontend se comunica con backend a través de la URL del servicio backend
 
-### Clientes
-- `GET /api/client/projects` - Proyectos del cliente
-- `GET /api/client/payments` - Pagos del cliente
+## Ventajas de la Arquitectura Separada
 
-### Administración
-- `GET /api/admin/stock` - Control de inventario
-- `GET /api/admin/employees` - Gestión de empleados
+- **Separación de responsabilidades** clara entre backend y frontend
+- **Escalabilidad independiente** de cada servicio
+- **Despliegue independiente** de cada componente
+- **Mejor mantenimiento** y debugging
+- **Flexibilidad** para usar diferentes tecnologías en cada servicio
 
-### Logística
-- `GET /api/logistics/route` - Rutas de trabajo
+## Comunicación entre Servicios
 
-### Ejecutivos
-- `GET /api/executive/metrics` - Métricas del negocio
+- El frontend obtiene la URL del backend desde `REACT_APP_API_URL`
+- Todas las llamadas API van del frontend al backend
+- CORS está configurado para permitir la comunicación
+- El backend maneja toda la lógica de negocio y base de datos
 
-### Chatbot
-- `POST /api/chatbot` - Interacción con asistente virtual
+## Notas Importantes
 
-### Calendario
-- `GET /api/calendar` - Obtener eventos
-- `POST /api/calendar` - Crear evento
+- Cada servicio tiene su propio puerto y URL en Render
+- El frontend se ejecuta con `npm start` en producción
+- El backend se ejecuta con `gunicorn` para mejor rendimiento
+- La base de datos se inicializa automáticamente en el backend
+- Las variables de entorno se configuran automáticamente en Render
 
-## Funcionalidades por Rol
+## Tecnologías Utilizadas
 
-### Cliente
-- Ver progreso de sus proyectos
-- Consultar estado de pagos
-- Acceder al asistente virtual
-- Calendario de eventos
-
-### Administrador
-- Control completo de stock
-- Gestión de todos los pagos
-- Administración de empleados
-- Alertas de inventario
-
-### Logística
-- Gestión de rutas de trabajo
-- Control de stock crítico
-- Seguimiento de proyectos en curso
-
-### Ejecutivo
-- Métricas generales del negocio
-- Reportes de rendimiento
-- Vista consolidada de todos los datos
-
-## Modo Fallback
-
-El frontend incluye un sistema de fallback que:
-
-- **Conecta al backend** cuando está disponible
-- **Usa datos mock** si el backend no responde
-- **Mantiene funcionalidad** en ambos casos
-- **Notifica en consola** el estado de la conexión
-
-## Base de Datos
-
-### Modelos Principales
-- **User**: Usuarios del sistema
-- **ClientProfile**: Perfiles de clientes
-- **EmployeeProfile**: Perfiles de empleados
-- **Project**: Proyectos de construcción
-- **Material**: Inventario de materiales
-- **Payment**: Pagos y transacciones
-- **Calendar**: Eventos y recordatorios
-
-### Relaciones
-- Un cliente puede tener múltiples proyectos
-- Un proyecto puede tener múltiples etapas y materiales
-- Los empleados pueden estar asignados a múltiples proyectos
-- Los pagos están vinculados a proyectos específicos
-
-## Configuración de Producción
-
-### Variables de Entorno
-```env
-SECRET_KEY=clave-secreta-produccion
-JWT_SECRET_KEY=jwt-secret-produccion
-DATABASE_URL=postgresql://usuario:password@host:puerto/database
-FLASK_ENV=production
-CORS_ORIGIN=https://tu-frontend-url.com
-```
-
-### Render Configuration
-El archivo `render.yaml` configura automáticamente:
-- Servicios web para backend y frontend
-- Base de datos PostgreSQL
-- Variables de entorno seguras
-- Conexión entre servicios
-
-## Contacto y Soporte
-
-Para consultas sobre el proyecto:
-- WhatsApp: +54 9 11 1234-5678
-- Email: info@nexamvp.com
-
-## Licencia
-
-Este proyecto es un MVP (Producto Mínimo Viable) desarrollado para demostración de capacidades de gestión en el sector de la construcción.
+- **Backend**: Flask, SQLAlchemy, JWT, CORS
+- **Frontend**: React, TypeScript, Material-UI, React Router
+- **Base de Datos**: PostgreSQL (Render), SQLite (desarrollo local)
+- **Despliegue**: Render, Gunicorn (backend), npm (frontend)
+- **Build**: pip (backend), npm (frontend)
