@@ -1,17 +1,16 @@
 services:
   - type: web
-    name: nexa-mvp-backend
+    name: nexa-mvp
     env: python
     plan: starter
     buildCommand: |
+      cd frontend && npm install && npm run build
       pip install --upgrade pip setuptools wheel
       pip install -r requirements.txt
     startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
-      - key: PYTHONPATH
-        value: "/opt/render/project/src"
       - key: FLASK_ENV
         value: production
       - key: FLASK_APP
@@ -26,22 +25,6 @@ services:
         generateValue: true
       - key: CORS_ORIGIN
         value: "*"
-
-  - type: static
-    name: nexa-mvp-frontend
-    buildCommand: |
-      cd frontend
-      npm install
-      npm run build
-    staticPublishPath: ./frontend/build
-    envVars:
-      - key: NODE_VERSION
-        value: "18"
-      - key: REACT_APP_API_URL
-        fromService:
-          name: nexa-mvp-backend
-          type: web
-          property: url
 
 databases:
   - name: nexa-mvp-db
