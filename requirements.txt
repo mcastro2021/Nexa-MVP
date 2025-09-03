@@ -1,0 +1,3 @@
+# Este archivo está vacío para evitar que Render intente hacer un build de Python
+# en la raíz del proyecto. Los servicios individuales están configurados en render.yaml
+# para usar Node.js y TypeScript.
